@@ -5,13 +5,13 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RecyclerView.RecyclerViewActivity">
+    tools:context=".FriendListView.FriendListViewActivity">
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Friend List"
+        android:text="[ Friends List ]"
         android:textSize="24sp"
         android:textStyle="bold"
         android:gravity="center"

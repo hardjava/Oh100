@@ -6,17 +6,15 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import com.example.oh100.Object.User
 
-class FriendListDBHelper(context: Context) : SQLiteOpenHelper(context, "friendList.db", null, 1) {
-    private val tableName = "FriendList"
+class MyPageDBHelper(context: Context) : SQLiteOpenHelper(context, "myPage.db", null, 1) {
+    private val tableName = "myPage"
     private val columnId = "id"
-    private val columnUserId = "userId"
-    private val columnSolvedCount = "solved_count"
+    private val columnMyId = "myID"
 
     override fun onCreate(db: SQLiteDatabase?) {
         val sql = "create table if not exists $tableName" +
                 "($columnId integer PRIMARY KEY autoincrement, " +
-                "$columnUserId text, " +
-                "$columnSolvedCount integer)"
+                "$columnMyId text)"
         db?.execSQL(sql)
     }
 
@@ -25,38 +23,34 @@ class FriendListDBHelper(context: Context) : SQLiteOpenHelper(context, "friendLi
         onCreate(db)
     }
 
-    fun getAllFriends(): ArrayList<User> {
-        val friendList = ArrayList<User>()
+    fun getMyId(): String? {
         val db = this.readableDatabase
+        var myId: String? = null
         val cursor = db?.rawQuery("select * from $tableName", null)
-
         if (cursor != null) {
             for (index in 0 until cursor.count) {
                 cursor.moveToNext()
                 val id = cursor.getInt(0)
-                val userId = cursor.getString(1)
-                val solvedCount = cursor.getInt(2)
-                friendList.add(User(userId, solvedCount))
+                myId = cursor.getString(1)
             }
             cursor.close()
         }
         db.close()
-        return friendList
+        return myId
     }
 
-    fun addFriend(id: String, solvedCount: Int) {
+    fun addMyId(myId: String) {
         val db = this.writableDatabase
         val values = ContentValues().apply {
-            put(columnUserId, id)
-            put(columnSolvedCount, solvedCount)
+            put(columnMyId, myId)
         }
         db.insert(tableName, null, values)
         db.close()
     }
 
-    fun deleteFriend(userId: String) {
+    fun deleteMyId(myId: String) {
         val db = this.writableDatabase
-        db.delete(tableName, "$columnUserId=?", arrayOf(userId))
+        db.delete(tableName, "$columnMyId=?", arrayOf(myId))
         db.close()
     }
 }

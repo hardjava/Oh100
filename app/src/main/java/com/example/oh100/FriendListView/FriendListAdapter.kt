@@ -1,17 +1,16 @@
-package com.example.oh100.Database
+package com.example.oh100.FriendListView
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.oh100.Object.Friend
+import com.example.oh100.Object.User
 import com.example.oh100.R
 import com.example.oh100.databinding.ItemMainBinding
 
 class MyViewHolder(val binding: ItemMainBinding) : RecyclerView.ViewHolder(binding.root)
 
-class FriendListAdapter(val datas: MutableList<Friend>) : RecyclerView.Adapter<MyViewHolder>() {
+class FriendListAdapter(val datas: MutableList<User>) : RecyclerView.Adapter<MyViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val binding = ItemMainBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MyViewHolder(binding)

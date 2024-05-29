@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".MyPageView.MyPageViewActivity">
+
+    <Button
+        android:id="@+id/exitButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Exit"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true" />
+
+    <TextView
+        android:id="@+id/myPageTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="[ My Page ]"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true"
+        android:layout_alignTop="@id/exitButton"
+        android:layout_marginTop="10dp" />
+
+    <ImageView
+        android:id="@+id/profileImageView"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/null_profile_image"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/exitButton"
+        android:background="@drawable/null_profile_image" />
+
+    <TextView
+        android:id="@+id/userIdTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profileImageView"
+        android:layout_marginTop="20dp"
+        android:text="User ID: [ not registered ]"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/tierTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/userIdTextView"
+        android:layout_marginTop="10dp"
+        android:text="Tier: ??"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/solvedCountTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tierTextView"
+        android:layout_marginTop="10dp"
+        android:text="Solved Count: ??"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/rankTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/solvedCountTextView"
+        android:layout_marginTop="10dp"
+        android:text="Rank: ??"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/maxStreakTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/rankTextView"
+        android:layout_marginTop="10dp"
+        android:text="maxStreak: ??"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/registerOrChangeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Registration / Change"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+</RelativeLayout>

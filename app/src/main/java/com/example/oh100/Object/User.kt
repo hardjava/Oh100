@@ -1,10 +1,14 @@
 package com.example.oh100.Object
 
-class Friend {
+class User {
     private var userId: String = ""
     private var solvedCount: Int = 0
     private var tier: Int = 0
     private var profileImageUrl: String? = null
+
+    constructor(userId: String) {
+        this.userId = userId
+    }
 
     constructor(userId: String, solvedCount: Int) {
         this.userId = userId
@@ -26,7 +30,7 @@ class Friend {
         return solvedCount
     }
 
-    fun getProfileImageUrl(): String?{
+    fun getProfileImageUrl(): String? {
         return profileImageUrl
     }
 }

@@ -5,18 +5,18 @@ import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-data class UserResponse(
+data class FriendListResponse(
     @SerializedName("tier") val tier: Int,
     @SerializedName("solvedCount") val solvedCount: Int,
     @SerializedName("profileImageUrl") val profileImageUrl: String?
 )
 
-data class ApiResponse(
+data class FriendListApiResponse(
     @SerializedName("count") val count: Int,
-    @SerializedName("items") val items: List<UserResponse>
+    @SerializedName("items") val items: List<FriendListResponse>
 )
 
-interface ApiService {
+interface FriendListApiService {
     @GET("/api/v3/search/user")
-    fun getUserData(@Query("query") userId: String): Call<ApiResponse>
+    fun getUserData(@Query("query") userId: String): Call<FriendListApiResponse>
 }
