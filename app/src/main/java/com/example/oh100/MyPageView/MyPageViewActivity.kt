@@ -3,7 +3,6 @@ package com.example.oh100.MyPageView
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
@@ -12,12 +11,8 @@ import com.example.oh100.Object.MyInfo
 import com.example.oh100.R
 import com.example.oh100.Service.MyInfoApiResponse
 import com.example.oh100.Service.MyInfoApiService
+import com.example.oh100.Service.update_token
 import com.example.oh100.databinding.MypageViewBinding
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.firestore.SetOptions
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.messaging.FirebaseMessaging
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
@@ -48,7 +43,7 @@ class MyPageViewActivity : AppCompatActivity() {
     private fun init() {
         dbHelper = MyPageDBHelper(this)
 //        dbHelper.addMyId("binarynacho")
-        dbHelper.deleteMyId("binarynacho")
+//        dbHelper.deleteMyId("binarynacho")
     }
 
     private fun showMyPage() {
@@ -133,27 +128,8 @@ class MyPageViewActivity : AppCompatActivity() {
             return
 
         val registered_id = data!!.getStringExtra("id").toString()
+        dbHelper.addMyId(registered_id)
 
-//        Firebase Cloud Messaging 토큰을 Cloud Firestore에 토큰을 저장
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w("Firebase Cloud Messaging", "Fetching FCM registration token failed", task.exception)
-                return@OnCompleteListener
-            }
-
-            // Get new FCM registration token
-            val token = task.result
-            val db = Firebase.firestore
-
-            val token_data = hashMapOf("token" to token)
-            db.collection("users").document(registered_id)
-                .set(token_data, SetOptions.merge())
-                .addOnSuccessListener {
-                    Log.d("Firebase Cloud Firestore", "Token saved successfully")
-                }
-                .addOnFailureListener { e ->
-                    Log.w("Firebase Cloud Firestore", "Error saving token", e)
-                }
-        })
+        update_token(registered_id)
     }
 }

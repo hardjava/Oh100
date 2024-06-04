@@ -11,18 +11,38 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import android.util.Log
+import com.example.oh100.Database.MyPageDBHelper
 import com.example.oh100.FriendListView.FriendListViewActivity
+import com.example.oh100.MyPageView.MyPageViewActivity
 import com.example.oh100.R
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
+
+val TAG = "Firebase Cloud Messaging"
 
 class CloudMessagingService : FirebaseMessagingService() {
+    override fun onNewToken(token: String) {
+        Log.d(TAG, "Refreshed token: $token")
+
+        val db_helper = MyPageDBHelper(this)
+
+        val registered_id = db_helper.getMyId();
+        if(registered_id != null) {
+            update_token(registered_id)
+        }
+    }
+
 //    Firebase Cloud Messaging 알림을 실제 표시하는 부분입니다.
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
-        // Check if message contains a notification payload.
-        remoteMessage.notification?.let {
-            Log.d("FCM", "Message Notification Body: ${it.body}")
-            sendNotification(it.title, it.body)
+        remoteMessage.data.isNotEmpty().let {
+            val title = remoteMessage.data["title"]
+            val body = remoteMessage.data["body"]
+            sendNotification(title, body)
         }
     }
 
@@ -49,4 +69,29 @@ class CloudMessagingService : FirebaseMessagingService() {
 
         notificationManager.notify(0, notificationBuilder.build())
     }
+}
+
+fun update_token(registered_id : String)
+{
+//        Firebase Cloud Messaging 토큰을 Cloud Firestore에 토큰을 저장
+    FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+        if (!task.isSuccessful) {
+            Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+            return@OnCompleteListener
+        }
+
+        // Get new FCM registration token
+        val token = task.result
+        val db = Firebase.firestore
+
+        val token_data = hashMapOf("token" to token)
+        db.collection("users").document(registered_id)
+            .set(token_data, SetOptions.merge())
+            .addOnSuccessListener {
+                Log.d("Firebase Cloud Firestore", "Token saved successfully")
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firebase Cloud Firestore", "Error saving token", e)
+            }
+    })
 }
