@@ -17,6 +17,7 @@ import com.example.oh100.MyPageView.MyPageViewActivity
 import com.example.oh100.Object.User
 import com.example.oh100.Service.FriendListApiResponse
 import com.example.oh100.Service.FriendListApiService
+import com.example.oh100.Timer.TimerActivity
 import com.example.oh100.databinding.FriendListViewBinding
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.firestore.SetOptions
@@ -46,6 +47,11 @@ class FriendListViewActivity : AppCompatActivity() {
         load()
         binding.myPageButton.setOnClickListener {
             val intent = Intent(this, MyPageViewActivity::class.java)
+            startActivity(intent)
+        }
+
+        binding.timerButton.setOnClickListener {
+            val intent = Intent(this, TimerActivity::class.java)
             startActivity(intent)
         }
 

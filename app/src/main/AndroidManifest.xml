@@ -15,6 +15,7 @@
         android:theme="@style/Theme.AppCompat"
         tools:targetApi="31">
         <activity android:name=".MyPageView.MyPageViewActivity" />
+        <activity android:name=".Timer.TimerActivity" />
         <activity
             android:name=".FriendListView.FriendListViewActivity"
             android:exported="true">

@@ -63,4 +63,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+//    티어 svg 이미지 로드
+    implementation("io.coil-kt:coil:2.6.0")
+    implementation("io.coil-kt:coil-svg:2.6.0")
+//    Problem 로드
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
