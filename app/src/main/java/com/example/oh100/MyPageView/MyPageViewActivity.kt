@@ -1,6 +1,7 @@
 package com.example.oh100.MyPageView
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,7 @@ import com.example.oh100.Object.MyInfo
 import com.example.oh100.R
 import com.example.oh100.Service.MyInfoApiResponse
 import com.example.oh100.Service.MyInfoApiService
+import com.example.oh100.Service.update_token
 import com.example.oh100.databinding.MypageViewBinding
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -31,11 +33,16 @@ class MyPageViewActivity : AppCompatActivity() {
         binding.exitButton.setOnClickListener {
             finish()
         }
+
+        binding.registerOrChangeButton.setOnClickListener {
+//            val intent = Intent(this, TODO : 사용자 설정 Activity 입력::class.java)
+//            startActivity(intent)
+        }
     }
 
     private fun init() {
         dbHelper = MyPageDBHelper(this)
-        dbHelper.addMyId("binarynacho")
+//        dbHelper.addMyId("binarynacho")
 //        dbHelper.deleteMyId("binarynacho")
     }
 
@@ -112,5 +119,17 @@ class MyPageViewActivity : AppCompatActivity() {
                 .error(R.drawable.null_profile_image) // 로드 실패 시 기본 이미지 설정
                 .into(binding.profileImageView)
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if(data == null)
+            return
+
+        val registered_id = data!!.getStringExtra("id").toString()
+        dbHelper.addMyId(registered_id)
+
+        update_token(registered_id)
     }
 }

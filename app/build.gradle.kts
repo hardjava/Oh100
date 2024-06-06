@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -46,11 +47,14 @@ android {
 
 dependencies {
     implementation ("com.github.bumptech.glide:glide:4.12.0")
+    implementation(libs.firebase.messaging.ktx)
+    implementation(libs.firebase.firestore.ktx)
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.9.1")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

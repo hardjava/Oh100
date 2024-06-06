@@ -1,9 +1,16 @@
 package com.example.oh100.FriendListView
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.oh100.Database.FriendListDBHelper
 import com.example.oh100.MyPageView.MyPageViewActivity
@@ -11,6 +18,11 @@ import com.example.oh100.Object.User
 import com.example.oh100.Service.FriendListApiResponse
 import com.example.oh100.Service.FriendListApiService
 import com.example.oh100.databinding.FriendListViewBinding
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -36,6 +48,11 @@ class FriendListViewActivity : AppCompatActivity() {
             val intent = Intent(this, MyPageViewActivity::class.java)
             startActivity(intent)
         }
+
+//        Firebase Cloud Messaging 서비스를 위해서 알림 권한을 요청합니다. (이미 허가되어 있으면 자동으로 생략됩니다.)
+        askNotificationPermission()
+
+//        debug_fcm_token()
     }
 
     private fun init() {
@@ -119,5 +136,61 @@ class FriendListViewActivity : AppCompatActivity() {
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()
+    }
+
+//    Firebase Cloud Messaging 권한 요청을 위한 부분입니다.
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // FCM SDK (및 앱)가 알림을 게시할 수 있습니다.
+        } else {
+            Toast.makeText(this, "알림 권한이 거부되었습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun askNotificationPermission() {
+        // API 레벨 33 (TIRAMISU) 이상에서만 필요
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                        PackageManager.PERMISSION_GRANTED -> {
+                    // FCM SDK (및 앱)가 알림을 게시할 수 있습니다.
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+                    showPermissionRationale()
+                }
+                else -> {
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
+    }
+
+    private fun showPermissionRationale() {
+        AlertDialog.Builder(this)
+            .setTitle("알림 권한 필요")
+            .setMessage("문제 풀이 알림을 보내기 위해 알림 권한이 필요합니다.")
+            .setPositiveButton("허가") { _, _ ->
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            .setNegativeButton("거부") { _, _ ->
+                Toast.makeText(this, "알림 권한이 거부되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
+//    for debugging
+    private fun debug_fcm_token() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("Firebase Cloud Messaging", "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+            Log.d("Firebase Cloud Messaging", token)
+        })
     }
 }
