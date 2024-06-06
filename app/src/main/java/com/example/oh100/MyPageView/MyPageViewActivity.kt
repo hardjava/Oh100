@@ -11,6 +11,7 @@ import com.bumptech.glide.Glide
 import com.example.oh100.Database.MyPageDBHelper
 import com.example.oh100.Object.MyInfo
 import com.example.oh100.R
+import com.example.oh100.Service.CloudFirestoreService
 import com.example.oh100.Service.MyInfoApiResponse
 import com.example.oh100.Service.MyInfoApiService
 import com.example.oh100.Service.update_token
@@ -44,6 +45,8 @@ class MyPageViewActivity : AppCompatActivity() {
         }
 
         val dialog_binding = UserSearchingViewBinding.inflate(layoutInflater)
+        var user_exist = false
+        var user_count = 0
 
         dialog_binding.searchButton.setOnClickListener {
             val searching_handle = dialog_binding.userHandleEditText.text.toString()
@@ -59,9 +62,11 @@ class MyPageViewActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         val apiResponse = response.body()
                         if (apiResponse != null && apiResponse.items.isNotEmpty()) {
+                            user_exist = true
+
                             val userResponse = apiResponse.items[0]
                             val profile_image_URL = userResponse.profileImageUrl
-                            val count = userResponse.solvedCount
+                            user_count = userResponse.solvedCount
                             val tier = userResponse.tier
                             val rank = userResponse.rank
 
@@ -77,15 +82,19 @@ class MyPageViewActivity : AppCompatActivity() {
 
                             TierImage.load(this@MyPageViewActivity, dialog_binding.searchedUserTier, tier)
 
-                            dialog_binding.searchedUserCount.text = "Solved Count : $count"
+                            dialog_binding.searchedUserCount.text = "Solved Count : $user_count"
 
                             dialog_binding.searchedUserRank.text = "Rank : $rank"
                         }
                     } else {
+                        user_exist = false
+
                         Toast.makeText(applicationContext, "User doesn't exist", Toast.LENGTH_SHORT).show()
                     }
                 }
                 override fun onFailure(call: Call<MyInfoApiResponse>, t: Throwable) {
+                    user_exist = false
+
                     Toast.makeText(applicationContext, "Server's not responding", Toast.LENGTH_SHORT).show()
                 }
             })
@@ -97,9 +106,20 @@ class MyPageViewActivity : AppCompatActivity() {
             builder.setView(dialog_binding.root)
 
             builder.setPositiveButton("register / change") { dialog, _ ->
-                // TODO
+                if(user_exist) {
+                    val cur_handle = dbHelper.getMyId()
+                    if (cur_handle != null) {
+                        dbHelper.deleteMyId(cur_handle)
+                        CloudFirestoreService.drop_user(cur_handle)
+                    }
 
-                dialog.dismiss()
+                    val user_handle = dialog_binding.userHandleEditText.text.toString()
+                    dbHelper.addMyId(user_handle)
+                    
+                    CloudFirestoreService.add_user(user_handle, user_count)
+
+                    dialog.dismiss()
+                }
             }
             builder.setNegativeButton("cancel") { dialog, _ ->
                 dialog.dismiss()

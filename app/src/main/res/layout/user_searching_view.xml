@@ -5,11 +5,21 @@
     android:orientation="vertical"
     android:id="@+id/user_searching_layout">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:text="Search User"
+        android:textStyle="bold"
+        android:textSize="25sp" />
+
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="10">
+        android:weightSum="10"
+        android:padding="20dp">
 
         <EditText
             android:id="@+id/user_handle_edit_text"
@@ -40,7 +50,6 @@
             android:layout_width="175dp"
             android:layout_height="175dp"
             android:layout_gravity="center"
-            android:layout_marginTop="25dp"
             android:src="@drawable/null_profile_image" />
 
         <TextView

@@ -12,13 +12,21 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.oh100.Database.FriendListDBHelper
+import com.example.oh100.Database.MyPageDBHelper
 import com.example.oh100.MyPageView.MyPageViewActivity
 import com.example.oh100.Object.User
+import com.example.oh100.R
+import com.example.oh100.Service.CloudFirestoreService
 import com.example.oh100.Service.FriendListApiResponse
 import com.example.oh100.Service.FriendListApiService
+import com.example.oh100.Service.MyInfoApiResponse
+import com.example.oh100.Service.MyInfoApiService
 import com.example.oh100.timer.TimerActivity
 import com.example.oh100.databinding.FriendListViewBinding
+import com.example.oh100.databinding.UserSearchingViewBinding
+import com.example.oh100.solved.TierImage
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import okhttp3.OkHttpClient
@@ -35,6 +43,7 @@ class FriendListViewActivity : AppCompatActivity() {
     private lateinit var friendInformationList: MutableList<User>
     private lateinit var dbHelper: FriendListDBHelper
     private lateinit var adapter: FriendListAdapter
+    private lateinit var my_page_db_helper: MyPageDBHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,8 +61,86 @@ class FriendListViewActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+
+        val dialog_binding = UserSearchingViewBinding.inflate(layoutInflater)
+        var user_exist = false
+        var user_count = 0
+
+        dialog_binding.searchButton.setOnClickListener {
+            val searching_handle = dialog_binding.userHandleEditText.text.toString()
+
+            val retrofit = createRetrofitInstance() // Retrofit 인스턴스를 생성하는 함수 호출
+            val service = retrofit.create(MyInfoApiService::class.java)
+
+            val call = service.getMyInfo(searching_handle)
+            call.enqueue(object : Callback<MyInfoApiResponse> {
+                override fun onResponse(
+                    call: Call<MyInfoApiResponse>, response: Response<MyInfoApiResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        val apiResponse = response.body()
+                        if (apiResponse != null && apiResponse.items.isNotEmpty()) {
+                            user_exist = true
+
+                            val userResponse = apiResponse.items[0]
+                            val profile_image_URL = userResponse.profileImageUrl
+                            user_count = userResponse.solvedCount
+                            val tier = userResponse.tier
+                            val rank = userResponse.rank
+
+                            dialog_binding.searchedUserHandle.text = "User ID : $searching_handle"
+
+                            if (profile_image_URL != null) {
+                                Glide.with(dialog_binding.root)
+                                    .load(profile_image_URL)
+                                    .placeholder(R.drawable.null_profile_image)
+                                    .error(R.drawable.null_profile_image)
+                                    .into(dialog_binding.searchedUserImage)
+                            }
+
+                            TierImage.load(this@FriendListViewActivity, dialog_binding.searchedUserTier, tier)
+
+                            dialog_binding.searchedUserCount.text = "Solved Count : $user_count"
+
+                            dialog_binding.searchedUserRank.text = "Rank : $rank"
+                        }
+                    } else {
+                        user_exist = false
+
+                        Toast.makeText(applicationContext, "User doesn't exist", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                override fun onFailure(call: Call<MyInfoApiResponse>, t: Throwable) {
+                    user_exist = false
+
+                    Toast.makeText(applicationContext, "Server's not responding", Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+
         binding.searchFriendButton.setOnClickListener {
-            // TODO : 친구 추가 후 CLoud Firestore에도 추가
+            val builder = AlertDialog.Builder(this)
+
+            builder.setView(dialog_binding.root)
+
+            builder.setPositiveButton("Add") { dialog, _ ->
+                if(user_exist) {
+                    val user_handle = dialog_binding.userHandleEditText.text.toString()
+                    dbHelper.addFriend(user_handle, user_count)
+
+                    val my_handle = my_page_db_helper.getMyId()
+                    if(my_handle != null)
+                        CloudFirestoreService.add_friend(my_handle, user_handle, user_count)
+
+                    dialog.dismiss()
+                }
+            }
+            builder.setNegativeButton("cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+            val dialog = builder.create()
+            dialog.show()
         }
 
 //        Firebase Cloud Messaging 서비스를 위해서 알림 권한을 요청합니다. (이미 허가되어 있으면 자동으로 생략됩니다.)
@@ -66,6 +153,7 @@ class FriendListViewActivity : AppCompatActivity() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         dbHelper = FriendListDBHelper(this)
         friendInformationList = mutableListOf<User>()
+        my_page_db_helper = MyPageDBHelper(this)
 //         dbHelper.addFriend("songpy123",12)
 //          dbHelper.addFriend("binarynacho",12)
 //       dbHelper.deleteFriend("fkdlcn123")
