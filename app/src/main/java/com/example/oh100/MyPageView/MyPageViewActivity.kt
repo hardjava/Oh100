@@ -100,32 +100,33 @@ class MyPageViewActivity : AppCompatActivity() {
             })
         }
 
-        binding.registerOrChangeButton.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
 
-            builder.setView(dialog_binding.root)
+        builder.setView(dialog_binding.root)
 
-            builder.setPositiveButton("register / change") { dialog, _ ->
-                if(user_exist) {
-                    val cur_handle = dbHelper.getMyId()
-                    if (cur_handle != null) {
-                        dbHelper.deleteMyId(cur_handle)
-                        CloudFirestoreService.drop_user(cur_handle)
-                    }
-
-                    val user_handle = dialog_binding.userHandleEditText.text.toString()
-                    dbHelper.addMyId(user_handle)
-                    
-                    CloudFirestoreService.add_user(user_handle, user_count)
-
-                    dialog.dismiss()
+        builder.setPositiveButton("register / change") { dialog, _ ->
+            if(user_exist) {
+                val cur_handle = dbHelper.getMyId()
+                if (cur_handle != null) {
+                    dbHelper.deleteMyId(cur_handle)
+                    CloudFirestoreService.drop_user(cur_handle)
                 }
-            }
-            builder.setNegativeButton("cancel") { dialog, _ ->
+
+                val user_handle = dialog_binding.userHandleEditText.text.toString()
+                dbHelper.addMyId(user_handle)
+
+                CloudFirestoreService.add_user(user_handle, user_count)
+
                 dialog.dismiss()
             }
+        }
+        builder.setNegativeButton("cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
 
-            val dialog = builder.create()
+        val dialog = builder.create()
+
+        binding.registerOrChangeButton.setOnClickListener {
             dialog.show()
         }
     }

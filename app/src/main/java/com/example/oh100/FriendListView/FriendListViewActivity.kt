@@ -61,7 +61,6 @@ class FriendListViewActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-
         val dialog_binding = UserSearchingViewBinding.inflate(layoutInflater)
         var user_exist = false
         var user_count = 0
@@ -118,28 +117,29 @@ class FriendListViewActivity : AppCompatActivity() {
             })
         }
 
-        binding.searchFriendButton.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
 
-            builder.setView(dialog_binding.root)
+        builder.setView(dialog_binding.root)
 
-            builder.setPositiveButton("Add") { dialog, _ ->
-                if(user_exist) {
-                    val user_handle = dialog_binding.userHandleEditText.text.toString()
-                    dbHelper.addFriend(user_handle, user_count)
+        builder.setPositiveButton("Add") { dialog, _ ->
+            if(user_exist) {
+                val user_handle = dialog_binding.userHandleEditText.text.toString()
+                dbHelper.addFriend(user_handle, user_count)
 
-                    val my_handle = my_page_db_helper.getMyId()
-                    if(my_handle != null)
-                        CloudFirestoreService.add_friend(my_handle, user_handle, user_count)
+                val my_handle = my_page_db_helper.getMyId()
+                if(my_handle != null)
+                    CloudFirestoreService.add_friend(my_handle, user_handle, user_count)
 
-                    dialog.dismiss()
-                }
-            }
-            builder.setNegativeButton("cancel") { dialog, _ ->
                 dialog.dismiss()
             }
+        }
+        builder.setNegativeButton("cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
 
-            val dialog = builder.create()
+        val dialog = builder.create()
+
+        binding.searchFriendButton.setOnClickListener {
             dialog.show()
         }
 

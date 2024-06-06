@@ -20,6 +20,10 @@ import com.example.oh100.solved.TierImage
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 
+// TODO : 타이머 설정 중에 뒤로 나가도 계속 갱신되도록 설정
+// TODO : Search User 창 다시 열면 값들 모두 초기화 되어 있도록 설정
+// TODO : Cloud Firestore와 연계해서 오늘 푼 문제 수 리스트 및 마이페이지에 표시하도록 설정
+
 class TimerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
