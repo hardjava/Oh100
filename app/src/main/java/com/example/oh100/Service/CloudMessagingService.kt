@@ -1,6 +1,5 @@
 package com.example.oh100.Service
 
-import android.annotation.SuppressLint
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import android.app.NotificationChannel
@@ -13,7 +12,6 @@ import androidx.core.app.NotificationCompat
 import android.util.Log
 import com.example.oh100.Database.MyPageDBHelper
 import com.example.oh100.FriendListView.FriendListViewActivity
-import com.example.oh100.MyPageView.MyPageViewActivity
 import com.example.oh100.R
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.firestore.SetOptions
@@ -80,7 +78,6 @@ fun update_token(registered_id : String)
             return@OnCompleteListener
         }
 
-        // Get new FCM registration token
         val token = task.result
         val db = Firebase.firestore
 

@@ -1,4 +1,4 @@
-package com.example.oh100.Timer
+package com.example.oh100.timer
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -6,9 +6,8 @@ import android.content.Context
 import android.icu.text.DecimalFormat
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.NumberPicker
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
@@ -20,6 +19,10 @@ import com.example.oh100.solved.Problem
 import com.example.oh100.solved.TierImage
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
+
+// TODO : 타이머 설정 중에 뒤로 나가도 계속 갱신되도록 설정
+// TODO : Search User 창 다시 열면 값들 모두 초기화 되어 있도록 설정
+// TODO : Cloud Firestore와 연계해서 오늘 푼 문제 수 리스트 및 마이페이지에 표시하도록 설정
 
 class TimerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,7 +121,7 @@ class TimerActivity : AppCompatActivity() {
                 if(!problem_number.isBlank() && problem_number.all { it.isDigit() }) {
                     CoroutineScope(Dispatchers.Main).launch {
                         val problem = Problem()
-                        problem.init(problem_number.toInt()) // suspend fun 호출
+                        problem.init(problem_number.toInt())
 
                         if (problem.getTitle() != null) {
                             TierImage.load(this@TimerActivity, binding.problemImage, problem.getLevel())
@@ -128,6 +131,8 @@ class TimerActivity : AppCompatActivity() {
                                 "Problem ${problem_number} : ${problem.getTitle()}"
                             binding.problemText.visibility = View.VISIBLE
                         } else {
+                            Toast.makeText(this@TimerActivity, "Problem doesn't exist", Toast.LENGTH_SHORT).show()
+
                             binding.problemImage.visibility = View.INVISIBLE
                             binding.problemText.visibility = View.INVISIBLE
                         }

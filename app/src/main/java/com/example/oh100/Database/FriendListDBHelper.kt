@@ -50,7 +50,9 @@ class FriendListDBHelper(context: Context) : SQLiteOpenHelper(context, "friendLi
             put(columnUserId, id)
             put(columnSolvedCount, solvedCount)
         }
-        db.insert(tableName, null, values)
+        
+//        중복된 값이 들어오면 덮어쓰기 하도록 수정
+        db.insertWithOnConflict(tableName, null, values, SQLiteDatabase.CONFLICT_REPLACE)
         db.close()
     }
 
