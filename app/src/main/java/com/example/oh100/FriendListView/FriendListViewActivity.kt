@@ -17,12 +17,9 @@ import com.example.oh100.MyPageView.MyPageViewActivity
 import com.example.oh100.Object.User
 import com.example.oh100.Service.FriendListApiResponse
 import com.example.oh100.Service.FriendListApiService
-import com.example.oh100.Timer.TimerActivity
+import com.example.oh100.timer.TimerActivity
 import com.example.oh100.databinding.FriendListViewBinding
 import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.firestore.SetOptions
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -53,6 +50,10 @@ class FriendListViewActivity : AppCompatActivity() {
         binding.timerButton.setOnClickListener {
             val intent = Intent(this, TimerActivity::class.java)
             startActivity(intent)
+        }
+
+        binding.searchFriendButton.setOnClickListener {
+            // TODO : 친구 추가 후 CLoud Firestore에도 추가
         }
 
 //        Firebase Cloud Messaging 서비스를 위해서 알림 권한을 요청합니다. (이미 허가되어 있으면 자동으로 생략됩니다.)

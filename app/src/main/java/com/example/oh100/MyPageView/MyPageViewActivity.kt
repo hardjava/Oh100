@@ -3,7 +3,9 @@ package com.example.oh100.MyPageView
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.oh100.Database.MyPageDBHelper
@@ -13,6 +15,13 @@ import com.example.oh100.Service.MyInfoApiResponse
 import com.example.oh100.Service.MyInfoApiService
 import com.example.oh100.Service.update_token
 import com.example.oh100.databinding.MypageViewBinding
+import com.example.oh100.databinding.TimePickerViewBinding
+import com.example.oh100.databinding.UserSearchingViewBinding
+import com.example.oh100.solved.Problem
+import com.example.oh100.solved.TierImage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
@@ -34,9 +43,70 @@ class MyPageViewActivity : AppCompatActivity() {
             finish()
         }
 
+        val dialog_binding = UserSearchingViewBinding.inflate(layoutInflater)
+
+        dialog_binding.searchButton.setOnClickListener {
+            val searching_handle = dialog_binding.userHandleEditText.text.toString()
+
+            val retrofit = createRetrofitInstance() // Retrofit 인스턴스를 생성하는 함수 호출
+            val service = retrofit.create(MyInfoApiService::class.java)
+
+            val call = service.getMyInfo(searching_handle)
+            call.enqueue(object : Callback<MyInfoApiResponse> {
+                override fun onResponse(
+                    call: Call<MyInfoApiResponse>, response: Response<MyInfoApiResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        val apiResponse = response.body()
+                        if (apiResponse != null && apiResponse.items.isNotEmpty()) {
+                            val userResponse = apiResponse.items[0]
+                            val profile_image_URL = userResponse.profileImageUrl
+                            val count = userResponse.solvedCount
+                            val tier = userResponse.tier
+                            val rank = userResponse.rank
+
+                            dialog_binding.searchedUserHandle.text = "User ID : $searching_handle"
+
+                            if (profile_image_URL != null) {
+                                Glide.with(dialog_binding.root)
+                                    .load(profile_image_URL)
+                                    .placeholder(R.drawable.null_profile_image)
+                                    .error(R.drawable.null_profile_image)
+                                    .into(dialog_binding.searchedUserImage)
+                            }
+
+                            TierImage.load(this@MyPageViewActivity, dialog_binding.searchedUserTier, tier)
+
+                            dialog_binding.searchedUserCount.text = "Solved Count : $count"
+
+                            dialog_binding.searchedUserRank.text = "Rank : $rank"
+                        }
+                    } else {
+                        Toast.makeText(applicationContext, "User doesn't exist", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                override fun onFailure(call: Call<MyInfoApiResponse>, t: Throwable) {
+                    Toast.makeText(applicationContext, "Server's not responding", Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+
         binding.registerOrChangeButton.setOnClickListener {
-//            val intent = Intent(this, TODO : 사용자 설정 Activity 입력::class.java)
-//            startActivity(intent)
+            val builder = AlertDialog.Builder(this)
+
+            builder.setView(dialog_binding.root)
+
+            builder.setPositiveButton("register / change") { dialog, _ ->
+                // TODO
+
+                dialog.dismiss()
+            }
+            builder.setNegativeButton("cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+            val dialog = builder.create()
+            dialog.show()
         }
     }
 

@@ -1,4 +1,4 @@
-package com.example.oh100.Timer
+package com.example.oh100.timer
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -6,9 +6,7 @@ import android.content.Context
 import android.icu.text.DecimalFormat
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.NumberPicker
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
@@ -118,7 +116,7 @@ class TimerActivity : AppCompatActivity() {
                 if(!problem_number.isBlank() && problem_number.all { it.isDigit() }) {
                     CoroutineScope(Dispatchers.Main).launch {
                         val problem = Problem()
-                        problem.init(problem_number.toInt()) // suspend fun 호출
+                        problem.init(problem_number.toInt())
 
                         if (problem.getTitle() != null) {
                             TierImage.load(this@TimerActivity, binding.problemImage, problem.getLevel())
