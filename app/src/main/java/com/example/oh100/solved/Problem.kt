@@ -2,28 +2,32 @@ package com.example.oh100.solved
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
 class Problem {
     private var problem : JsonObject? = null;
 
-    constructor(problem_number : Int) {
-        val client = OkHttpClient()
+    suspend fun init(problem_number : Int) {
+        withContext(Dispatchers.IO) {
+            val client = OkHttpClient()
 
-        val request = Request.Builder()
-            .url("https://solved.ac/api/v3/problem/show?problemId=" + problem_number.toString())
-            .get()
-            .addHeader("x-solvedac-language", "")
-            .addHeader("Accept", "application/json")
-            .build()
+            val request = Request.Builder()
+                .url("https://solved.ac/api/v3/problem/show?problemId=" + problem_number.toString())
+                .get()
+                .addHeader("x-solvedac-language", "")
+                .addHeader("Accept", "application/json")
+                .build()
 
-        val response = client.newCall(request).execute()
+            val response = client.newCall(request).execute()
 
-        if (response.isSuccessful) {
-            val responseBody = response.body?.string()
-            if (responseBody != null)
-                problem = Gson().fromJson(responseBody, JsonObject::class.java)
+            if (response.isSuccessful) {
+                val responseBody = response.body?.string()
+                if (responseBody != null)
+                    problem = Gson().fromJson(responseBody, JsonObject::class.java)
+            }
         }
     }
 

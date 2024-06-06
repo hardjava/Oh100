@@ -6,6 +6,7 @@ import android.content.Context
 import android.icu.text.DecimalFormat
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.NumberPicker
 import androidx.appcompat.app.AlertDialog
@@ -93,7 +94,10 @@ class TimerActivity : AppCompatActivity() {
             is_running = false
 
             val builder = AlertDialog.Builder(this)
+
             val dialog_binding = TimePickerViewBinding.inflate(layoutInflater)
+
+            builder.setView(dialog_binding.root)
 
             dialog_binding.hourPicker.minValue = 0
             dialog_binding.hourPicker.maxValue = 99
@@ -102,7 +106,7 @@ class TimerActivity : AppCompatActivity() {
             dialog_binding.secondPicker.minValue = 0
             dialog_binding.secondPicker.maxValue = 59
 
-            builder.setPositiveButton("Set") { dialog, _ ->
+            builder.setPositiveButton("set") { dialog, _ ->
                 h = dialog_binding.hourPicker.value
                 m = dialog_binding.minutePicker.value
                 s = dialog_binding.secondPicker.value
@@ -111,22 +115,28 @@ class TimerActivity : AppCompatActivity() {
 
                 val problem_number = dialog_binding.timerProblemNumber.text.toString()
 
-                if(!problem_number.isBlank() || !problem_number.all { it.isDigit() }) {
-                    val problem = Problem(problem_number.toInt())
+                if(!problem_number.isBlank() && problem_number.all { it.isDigit() }) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        val problem = Problem()
+                        problem.init(problem_number.toInt()) // suspend fun 호출
 
-                    if(problem != null) {
-                        TierImage.load(binding.problemImage, problem.getLevel());
-                        binding.problemImage.visibility = View.VISIBLE
+                        if (problem.getTitle() != null) {
+                            TierImage.load(this@TimerActivity, binding.problemImage, problem.getLevel())
+                            binding.problemImage.visibility = View.VISIBLE
 
-                        binding.problemText.text =
-                            "Problem ${problem_number} : ${problem.getTitle()}"
-                        binding.problemText.visibility = View.VISIBLE
+                            binding.problemText.text =
+                                "Problem ${problem_number} : ${problem.getTitle()}"
+                            binding.problemText.visibility = View.VISIBLE
+                        } else {
+                            binding.problemImage.visibility = View.INVISIBLE
+                            binding.problemText.visibility = View.INVISIBLE
+                        }
                     }
                 }
 
                 dialog.dismiss()
             }
-            builder.setNegativeButton("취소") { dialog, _ ->
+            builder.setNegativeButton("cancel") { dialog, _ ->
                 dialog.dismiss()
             }
 
@@ -135,7 +145,7 @@ class TimerActivity : AppCompatActivity() {
         }
 
         binding.startButton.setOnClickListener {
-            if(!is_running) {
+            if(!is_running && !(s == 0 && m == 0 && h == 0)) {
                 is_running = true
 
                 solving_time = 0
@@ -186,6 +196,8 @@ class TimerActivity : AppCompatActivity() {
         binding.pauseButton.setOnClickListener {
             if(is_running)
                 job?.cancel()
+
+            is_running = false
         }
 
         binding.solvedButton.setOnClickListener {
@@ -205,7 +217,7 @@ class TimerActivity : AppCompatActivity() {
             val solved_second = solving_time % 60;
 
             AlertDialog.Builder(this)
-                .setMessage(binding.problemText.text.toString() + "solved in $solved_hour:$solved_minute:$solved_second.")
+                .setMessage(binding.problemText.text.toString() + " is solved in $solved_hour:$solved_minute:$solved_second.")
                 .setPositiveButton("close") { dialog, _ ->
                     dialog.dismiss()
                 }
