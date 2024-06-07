@@ -222,7 +222,7 @@ class MyPageViewActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     private fun updateMyPageView(myInfo: MyInfo) {
         binding.userIdTextView.text = "User ID: ${myInfo.getMyId()}"
-        binding.tierTextView.text = "Tier: ${myInfo.getMyTier()}"
+        TierImage.load(this, binding.myTier, myInfo.getMyTier())
         binding.solvedCountTextView.text = "Solved Count: ${myInfo.getMySolvedCount()}"
         binding.rankTextView.text = "Rank: ${myInfo.getMyRank()}"
         binding.maxStreakTextView.text = "maxStreak: ${myInfo.getMyMaxStreak()}"

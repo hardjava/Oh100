@@ -41,25 +41,39 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/profileImageView"
         android:layout_marginTop="20dp"
-        android:text="User ID: [ not registered ]"
+        android:text="User ID : NULL"
         android:textSize="18sp" />
 
-    <TextView
-        android:id="@+id/tierTextView"
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/tierLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_below="@id/userIdTextView"
-        android:layout_marginTop="10dp"
-        android:text="Tier: ??"
-        android:textSize="18sp" />
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tier : "
+            android:textSize="18sp" />
+
+        <ImageView
+            android:id="@+id/my_tier"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="bottom"
+            android:src="@drawable/level_0" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
     <TextView
         android:id="@+id/solvedCountTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tierTextView"
+        android:layout_below="@id/tierLayout"
         android:layout_marginTop="10dp"
-        android:text="Solved Count: ??"
+        android:text="Solved Count : NULL"
         android:textSize="18sp" />
 
     <TextView
@@ -68,7 +82,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/solvedCountTextView"
         android:layout_marginTop="10dp"
-        android:text="Rank: ??"
+        android:text="Rank : NULL"
         android:textSize="18sp" />
 
     <TextView
@@ -77,14 +91,14 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/rankTextView"
         android:layout_marginTop="10dp"
-        android:text="maxStreak: ??"
+        android:text="maxStreak : NULL"
         android:textSize="18sp" />
 
     <Button
         android:id="@+id/registerOrChangeButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Registration / Change"
+        android:text="Regist / Change"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 </RelativeLayout>
