@@ -20,24 +20,31 @@ import com.example.oh100.solved.TierImage
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 
-// TODO : 타이머 설정 중에 뒤로 나가도 계속 갱신되도록 설정
-// TODO : Search User 창 다시 열면 값들 모두 초기화 되어 있도록 설정
-// TODO : Search User 창에서 설정하면 친구 리스트 및 마이페이지가 새로고침 되도록 설정
-// TODO : Cloud Firestore와 연계해서 오늘 푼 문제 수를 친구 리스트 및 마이페이지에 표시하도록 설정
+// TODO : MyPage에서 현재 사용자 정보를 변경하면 친구 리스트도 변경되도록 설정
 
 class TimerActivity : AppCompatActivity() {
+    private lateinit var binding : TimerViewBinding
+    private val df = DecimalFormat("00")
+    private var job: Job? = null
+    private val channel = Channel<String>()
+    private var update_job: Job? = null
+
+    private var h = 0
+    private var m = 0
+    private var s = 0
+    private var is_running = false
+    private var solving_time = 0
+    private var problem_number : Int? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val binding = TimerViewBinding.inflate(layoutInflater)
+        binding = TimerViewBinding.inflate(layoutInflater)
         setContentView(binding.timerLayout)
 
-        var job: Job? = null
-        val channel = Channel<String>()
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "채널 이름"
-            val descriptionText = "채널 설명"
+            val name = "Timer_Channel"
+            val descriptionText = "Notification Channel for Timer"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val timer_channel = NotificationChannel("Timer", name, importance).apply {
                 description = descriptionText
@@ -47,15 +54,6 @@ class TimerActivity : AppCompatActivity() {
             notificationManager.createNotificationChannel(timer_channel)
         }
 
-        var is_running = false
-
-        var h = 0
-        var m = 0
-        var s = 0
-        var solving_time = 0
-
-        val df = DecimalFormat("00")
-
         binding.twoHoursButton.setOnClickListener {
             job?.cancel()
 
@@ -64,6 +62,8 @@ class TimerActivity : AppCompatActivity() {
             h = 2
             m = 0
             s = 0
+
+            solving_time = 0;
 
             binding.timerText.text = "02:00:00"
         }
@@ -77,6 +77,8 @@ class TimerActivity : AppCompatActivity() {
             m = 0
             s = 0
 
+            solving_time = 0;
+
             binding.timerText.text = "01:00:00"
         }
 
@@ -88,6 +90,8 @@ class TimerActivity : AppCompatActivity() {
             h = 0
             m = 30
             s = 0
+
+            solving_time = 0;
 
             binding.timerText.text = "00:30:00"
         }
@@ -115,14 +119,18 @@ class TimerActivity : AppCompatActivity() {
                 m = dialog_binding.minutePicker.value
                 s = dialog_binding.secondPicker.value
 
+                solving_time = 0;
+
                 binding.timerText.text = "${df.format(h)}:${df.format(m)}:${df.format(s)}"
 
-                val problem_number = dialog_binding.timerProblemNumber.text.toString()
+                val temp_number = dialog_binding.timerProblemNumber.text.toString()
 
-                if(!problem_number.isBlank() && problem_number.all { it.isDigit() }) {
+                if(!temp_number.isBlank() && temp_number.all { it.isDigit() }) {
+                    problem_number = temp_number.toInt()
+
                     CoroutineScope(Dispatchers.Main).launch {
                         val problem = Problem()
-                        problem.init(problem_number.toInt())
+                        problem.init(problem_number!!)
 
                         if (problem.getTitle() != null) {
                             TierImage.load(this@TimerActivity, binding.problemImage, problem.getLevel())
@@ -218,22 +226,41 @@ class TimerActivity : AppCompatActivity() {
 
             binding.timerText.text = "00:00:00"
 
-            val solved_hour = solving_time / 3600;
-            val solved_minute = (solving_time % 3600) / 60;
-            val solved_second = solving_time % 60;
+            var problem_name = binding.problemText.text.toString()
 
-            AlertDialog.Builder(this)
-                .setMessage(binding.problemText.text.toString() + " is solved in $solved_hour:$solved_minute:$solved_second.")
-                .setPositiveButton("close") { dialog, _ ->
-                    dialog.dismiss()
-                }
-                .show()
+            if(binding.problemText.visibility == View.INVISIBLE)
+                problem_name = "The Problem"
+
+            binding.problemImage.visibility = View.INVISIBLE
+            binding.problemText.visibility = View.INVISIBLE
+
+            if(solving_time != 0) {
+                val solved_hour = solving_time / 3600
+                val solved_minute = (solving_time % 3600) / 60
+                val solved_second = solving_time % 60
+
+                AlertDialog.Builder(this)
+                    .setMessage(problem_name + " is solved in ${df.format(solved_hour)}:${df.format(solved_minute)}:${df.format(solved_second)}.")
+                    .setPositiveButton("close") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+            }
+
+            solving_time = 0;
         }
 
-        var mainScope = GlobalScope.launch(Dispatchers.Main) {
+        update_job = GlobalScope.launch(Dispatchers.Main) {
             channel.consumeEach {
                 binding.timerText.text = "$it"
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        job?.cancel()
+        update_job?.cancel()
     }
 }

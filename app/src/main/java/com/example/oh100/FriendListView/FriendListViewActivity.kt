@@ -23,7 +23,7 @@ import com.example.oh100.Service.FriendListApiResponse
 import com.example.oh100.Service.FriendListApiService
 import com.example.oh100.Service.MyInfoApiResponse
 import com.example.oh100.Service.MyInfoApiService
-import com.example.oh100.timer.TimerActivity
+import com.example.oh100.timer.*
 import com.example.oh100.databinding.FriendListViewBinding
 import com.example.oh100.databinding.UserSearchingViewBinding
 import com.example.oh100.solved.TierImage
@@ -95,6 +95,8 @@ class FriendListViewActivity : AppCompatActivity() {
                                     .placeholder(R.drawable.null_profile_image)
                                     .error(R.drawable.null_profile_image)
                                     .into(dialog_binding.searchedUserImage)
+                            } else {
+                                dialog_binding.searchedUserImage.setImageResource(R.drawable.null_profile_image)
                             }
 
                             TierImage.load(this@FriendListViewActivity, dialog_binding.searchedUserTier, tier)
@@ -102,15 +104,22 @@ class FriendListViewActivity : AppCompatActivity() {
                             dialog_binding.searchedUserCount.text = "Solved Count : $user_count"
 
                             dialog_binding.searchedUserRank.text = "Rank : $rank"
-                        }
-                    } else {
-                        user_exist = false
+                        } else {
+                            user_exist = false
 
-                        Toast.makeText(applicationContext, "User doesn't exist", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(applicationContext, "User doesn't exist", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
                 override fun onFailure(call: Call<MyInfoApiResponse>, t: Throwable) {
                     user_exist = false
+
+                    dialog_binding.userHandleEditText.setText("")
+                    dialog_binding.searchedUserImage.setImageResource(R.drawable.null_profile_image)
+                    dialog_binding.searchedUserHandle.text = "Handle : NULL"
+                    dialog_binding.searchedUserTier.setImageResource(R.drawable.level_12)
+                    dialog_binding.searchedUserCount.text = "Solved Count : NULL"
+                    dialog_binding.searchedUserRank.text = "Rank : NULL"
 
                     Toast.makeText(applicationContext, "Server's not responding", Toast.LENGTH_SHORT).show()
                 }
@@ -132,6 +141,8 @@ class FriendListViewActivity : AppCompatActivity() {
 
                 dialog.dismiss()
             }
+
+            load()
         }
         builder.setNegativeButton("cancel") { dialog, _ ->
             dialog.dismiss()
@@ -139,8 +150,21 @@ class FriendListViewActivity : AppCompatActivity() {
 
         val dialog = builder.create()
 
+        dialog.setOnDismissListener {
+            dialog_binding.userHandleEditText.setText("")
+            dialog_binding.searchedUserImage.setImageResource(R.drawable.null_profile_image)
+            dialog_binding.searchedUserHandle.text = "Handle : NULL"
+            dialog_binding.searchedUserTier.setImageResource(R.drawable.level_12)
+            dialog_binding.searchedUserCount.text = "Solved Count : NULL"
+            dialog_binding.searchedUserRank.text = "Rank : NULL"
+        }
+
         binding.searchFriendButton.setOnClickListener {
-            dialog.show()
+            if(my_page_db_helper.getMyId() == null) {
+                Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show()
+            } else {
+                dialog.show()
+            }
         }
 
 //        Firebase Cloud Messaging 서비스를 위해서 알림 권한을 요청합니다. (이미 허가되어 있으면 자동으로 생략됩니다.)
@@ -152,11 +176,9 @@ class FriendListViewActivity : AppCompatActivity() {
     private fun init() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         dbHelper = FriendListDBHelper(this)
-        friendInformationList = mutableListOf<User>()
         my_page_db_helper = MyPageDBHelper(this)
-//         dbHelper.addFriend("songpy123",12)
-//          dbHelper.addFriend("binarynacho",12)
-//       dbHelper.deleteFriend("fkdlcn123")
+//        dbHelper.deleteFriend("songpy123")
+//        dbHelper.deleteFriend("fkdlcn123")
 //        dbHelper.deleteFriend("binarynacho")
 
     }
@@ -164,6 +186,7 @@ class FriendListViewActivity : AppCompatActivity() {
     private fun load() {
         friendList = dbHelper.getAllFriends() // friendListDB에 있는 friendList
         if (friendList.isNotEmpty()) {
+            friendInformationList = mutableListOf<User>()
             for (friend in friendList) {
                 val userId = friend.getUserId()
                 val retrofit = createRetrofitInstance() // Retrofit 인스턴스를 생성하는 함수 호출

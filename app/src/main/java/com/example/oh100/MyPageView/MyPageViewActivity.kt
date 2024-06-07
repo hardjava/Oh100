@@ -23,6 +23,7 @@ import com.example.oh100.solved.TierImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
@@ -78,6 +79,8 @@ class MyPageViewActivity : AppCompatActivity() {
                                     .placeholder(R.drawable.null_profile_image)
                                     .error(R.drawable.null_profile_image)
                                     .into(dialog_binding.searchedUserImage)
+                            } else {
+                                dialog_binding.searchedUserImage.setImageResource(R.drawable.null_profile_image)
                             }
 
                             TierImage.load(this@MyPageViewActivity, dialog_binding.searchedUserTier, tier)
@@ -85,15 +88,22 @@ class MyPageViewActivity : AppCompatActivity() {
                             dialog_binding.searchedUserCount.text = "Solved Count : $user_count"
 
                             dialog_binding.searchedUserRank.text = "Rank : $rank"
-                        }
-                    } else {
-                        user_exist = false
+                        } else {
+                            user_exist = false
 
-                        Toast.makeText(applicationContext, "User doesn't exist", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(applicationContext, "User doesn't exist", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
                 override fun onFailure(call: Call<MyInfoApiResponse>, t: Throwable) {
                     user_exist = false
+
+                    dialog_binding.userHandleEditText.setText("")
+                    dialog_binding.searchedUserImage.setImageResource(R.drawable.null_profile_image)
+                    dialog_binding.searchedUserHandle.text = "Handle : NULL"
+                    dialog_binding.searchedUserTier.setImageResource(R.drawable.level_12)
+                    dialog_binding.searchedUserCount.text = "Solved Count : NULL"
+                    dialog_binding.searchedUserRank.text = "Rank : NULL"
 
                     Toast.makeText(applicationContext, "Server's not responding", Toast.LENGTH_SHORT).show()
                 }
@@ -107,17 +117,28 @@ class MyPageViewActivity : AppCompatActivity() {
         builder.setPositiveButton("register / change") { dialog, _ ->
             if(user_exist) {
                 val cur_handle = dbHelper.getMyId()
+                val user_handle = dialog_binding.userHandleEditText.text.toString()
+
                 if (cur_handle != null) {
                     dbHelper.deleteMyId(cur_handle)
                     CloudFirestoreService.drop_user(cur_handle)
+
+                    runBlocking {
+                        launch(Dispatchers.IO) {
+                            CloudFirestoreService.rename_document("friends_count", cur_handle, user_handle)
+                        }
+                    }
+
+                    dbHelper.deleteMyId(cur_handle)
                 }
 
-                val user_handle = dialog_binding.userHandleEditText.text.toString()
                 dbHelper.addMyId(user_handle)
 
                 CloudFirestoreService.add_user(user_handle, user_count)
 
                 dialog.dismiss()
+
+                showMyPage()
             }
         }
         builder.setNegativeButton("cancel") { dialog, _ ->
@@ -126,6 +147,15 @@ class MyPageViewActivity : AppCompatActivity() {
 
         val dialog = builder.create()
 
+        dialog.setOnDismissListener {
+            dialog_binding.userHandleEditText.setText("")
+            dialog_binding.searchedUserImage.setImageResource(R.drawable.null_profile_image)
+            dialog_binding.searchedUserHandle.text = "Handle : NULL"
+            dialog_binding.searchedUserTier.setImageResource(R.drawable.level_12)
+            dialog_binding.searchedUserCount.text = "Solved Count : NULL"
+            dialog_binding.searchedUserRank.text = "Rank : NULL"
+        }
+
         binding.registerOrChangeButton.setOnClickListener {
             dialog.show()
         }
@@ -133,8 +163,9 @@ class MyPageViewActivity : AppCompatActivity() {
 
     private fun init() {
         dbHelper = MyPageDBHelper(this)
-//        dbHelper.addMyId("binarynacho")
 //        dbHelper.deleteMyId("binarynacho")
+//        dbHelper.deleteMyId("songpy123")
+//        dbHelper.deleteMyId("fkdlcn123")
     }
 
     private fun showMyPage() {
@@ -209,6 +240,8 @@ class MyPageViewActivity : AppCompatActivity() {
                 .placeholder(R.drawable.null_profile_image) // 기본 이미지 설정
                 .error(R.drawable.null_profile_image) // 로드 실패 시 기본 이미지 설정
                 .into(binding.profileImageView)
+        } else {
+            binding.profileImageView.setImageResource(R.drawable.null_profile_image)
         }
     }
 

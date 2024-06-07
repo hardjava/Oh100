@@ -8,13 +8,11 @@ import com.example.oh100.Object.User
 
 class MyPageDBHelper(context: Context) : SQLiteOpenHelper(context, "myPage.db", null, 1) {
     private val tableName = "myPage"
-    private val columnId = "id"
     private val columnMyId = "myID"
 
     override fun onCreate(db: SQLiteDatabase?) {
         val sql = "create table if not exists $tableName" +
-                "($columnId integer PRIMARY KEY autoincrement, " +
-                "$columnMyId text)"
+                "($columnMyId text PRIMARY KEY)"
         db?.execSQL(sql)
     }
 
@@ -30,7 +28,6 @@ class MyPageDBHelper(context: Context) : SQLiteOpenHelper(context, "myPage.db", 
         if (cursor != null) {
             for (index in 0 until cursor.count) {
                 cursor.moveToNext()
-                val id = cursor.getInt(0)
                 myId = cursor.getString(1)
             }
             cursor.close()
