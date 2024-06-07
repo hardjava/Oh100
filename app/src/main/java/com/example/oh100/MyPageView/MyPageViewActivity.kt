@@ -145,7 +145,7 @@ class MyPageViewActivity : AppCompatActivity() {
     private fun init() {
         dbHelper = MyPageDBHelper(this)
 //        dbHelper.addMyId("binarynacho")
-//        dbHelper.deleteMyId("binarynacho")
+        dbHelper.deleteMyId("binarynacho")
     }
 
     private fun showMyPage() {

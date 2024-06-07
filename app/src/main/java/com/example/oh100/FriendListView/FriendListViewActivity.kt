@@ -23,7 +23,7 @@ import com.example.oh100.Service.FriendListApiResponse
 import com.example.oh100.Service.FriendListApiService
 import com.example.oh100.Service.MyInfoApiResponse
 import com.example.oh100.Service.MyInfoApiService
-import com.example.oh100.timer.TimerActivity
+import com.example.oh100.timer.*
 import com.example.oh100.databinding.FriendListViewBinding
 import com.example.oh100.databinding.UserSearchingViewBinding
 import com.example.oh100.solved.TierImage
@@ -163,10 +163,10 @@ class FriendListViewActivity : AppCompatActivity() {
     private fun init() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         dbHelper = FriendListDBHelper(this)
-        friendInformationList = mutableListOf<User>()
         my_page_db_helper = MyPageDBHelper(this)
 //         dbHelper.addFriend("songpy123",12)
 //          dbHelper.addFriend("binarynacho",12)
+        dbHelper.deleteFriend("songpy123")
 //       dbHelper.deleteFriend("fkdlcn123")
 //        dbHelper.deleteFriend("binarynacho")
 
@@ -175,6 +175,7 @@ class FriendListViewActivity : AppCompatActivity() {
     private fun load() {
         friendList = dbHelper.getAllFriends() // friendListDB에 있는 friendList
         if (friendList.isNotEmpty()) {
+            friendInformationList = mutableListOf<User>()
             for (friend in friendList) {
                 val userId = friend.getUserId()
                 val retrofit = createRetrofitInstance() // Retrofit 인스턴스를 생성하는 함수 호출
