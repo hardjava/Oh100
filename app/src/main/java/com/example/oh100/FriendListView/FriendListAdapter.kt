@@ -94,6 +94,8 @@ class FriendListAdapter(val datas: MutableList<User>) : RecyclerView.Adapter<MyV
                                 dialog_binding.friendImage.setImageResource(R.drawable.null_profile_image)
                             }
 
+                            TierImage.load(holder.itemView.context, dialog_binding.friendTier, tier)
+
                             dialog_binding.friendCount.text = "Solved Count : $solvedCount"
                             dialog_binding.friendRank.text = "Rank : $rank"
                         }
@@ -135,7 +137,7 @@ class FriendListAdapter(val datas: MutableList<User>) : RecyclerView.Adapter<MyV
             dialog.setOnDismissListener {
                 dialog_binding.friendImage.setImageResource(R.drawable.null_profile_image)
                 dialog_binding.friendHandle.text = "Handle : NULL"
-                dialog_binding.friendTier.setImageResource(R.drawable.level_12)
+                TierImage.load(holder.itemView.context, dialog_binding.friendTier, 0)
                 dialog_binding.friendCount.text = "Solved Count : NULL"
                 dialog_binding.friendRank.text = "Rank : NULL"
             }

@@ -6,6 +6,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 data class FriendListResponse(
+    @SerializedName("handle") val handle: String,
     @SerializedName("tier") val tier: Int,
     @SerializedName("solvedCount") val solvedCount: Int,
     @SerializedName("profileImageUrl") val profileImageUrl: String?

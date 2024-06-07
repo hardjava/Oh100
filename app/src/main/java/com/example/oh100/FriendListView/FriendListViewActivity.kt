@@ -64,6 +64,7 @@ class FriendListViewActivity : AppCompatActivity() {
         val dialog_binding = UserSearchingViewBinding.inflate(layoutInflater)
         var user_exist = false
         var user_count = 0
+        var user_handle : String? = null
 
         dialog_binding.searchButton.setOnClickListener {
             val searching_handle = dialog_binding.userHandleEditText.text.toString()
@@ -82,12 +83,13 @@ class FriendListViewActivity : AppCompatActivity() {
                             user_exist = true
 
                             val userResponse = apiResponse.items[0]
+                            user_handle = userResponse.handle
                             val profile_image_URL = userResponse.profileImageUrl
                             user_count = userResponse.solvedCount
                             val tier = userResponse.tier
                             val rank = userResponse.rank
 
-                            dialog_binding.searchedUserHandle.text = "User ID : $searching_handle"
+                            dialog_binding.searchedUserHandle.text = "User ID : $user_handle"
 
                             if (profile_image_URL != null) {
                                 Glide.with(dialog_binding.root)
@@ -117,7 +119,7 @@ class FriendListViewActivity : AppCompatActivity() {
                     dialog_binding.userHandleEditText.setText("")
                     dialog_binding.searchedUserImage.setImageResource(R.drawable.null_profile_image)
                     dialog_binding.searchedUserHandle.text = "Handle : NULL"
-                    dialog_binding.searchedUserTier.setImageResource(R.drawable.level_12)
+                    TierImage.load(this@FriendListViewActivity, dialog_binding.searchedUserTier, 0)
                     dialog_binding.searchedUserCount.text = "Solved Count : NULL"
                     dialog_binding.searchedUserRank.text = "Rank : NULL"
 
@@ -131,13 +133,12 @@ class FriendListViewActivity : AppCompatActivity() {
         builder.setView(dialog_binding.root)
 
         builder.setPositiveButton("Add") { dialog, _ ->
-            if(user_exist) {
-                val user_handle = dialog_binding.userHandleEditText.text.toString()
-                dbHelper.addFriend(user_handle, user_count)
+            if(user_exist && user_handle != null) {
+                dbHelper.addFriend(user_handle!!, user_count)
 
                 val my_handle = my_page_db_helper.getMyId()
                 if(my_handle != null)
-                    CloudFirestoreService.add_friend(my_handle, user_handle, user_count)
+                    CloudFirestoreService.add_friend(my_handle, user_handle!!, user_count)
 
                 dialog.dismiss()
             }
@@ -154,14 +155,14 @@ class FriendListViewActivity : AppCompatActivity() {
             dialog_binding.userHandleEditText.setText("")
             dialog_binding.searchedUserImage.setImageResource(R.drawable.null_profile_image)
             dialog_binding.searchedUserHandle.text = "Handle : NULL"
-            dialog_binding.searchedUserTier.setImageResource(R.drawable.level_12)
+            TierImage.load(this@FriendListViewActivity, dialog_binding.searchedUserTier, 0)
             dialog_binding.searchedUserCount.text = "Solved Count : NULL"
             dialog_binding.searchedUserRank.text = "Rank : NULL"
         }
 
         binding.searchFriendButton.setOnClickListener {
             if(my_page_db_helper.getMyId() == null) {
-                Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please register first", Toast.LENGTH_SHORT).show()
             } else {
                 dialog.show()
             }
@@ -169,18 +170,12 @@ class FriendListViewActivity : AppCompatActivity() {
 
 //        Firebase Cloud Messaging 서비스를 위해서 알림 권한을 요청합니다. (이미 허가되어 있으면 자동으로 생략됩니다.)
         askNotificationPermission()
-
-//        debug_fcm_token()
     }
 
     private fun init() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         dbHelper = FriendListDBHelper(this)
         my_page_db_helper = MyPageDBHelper(this)
-//        dbHelper.deleteFriend("songpy123")
-//        dbHelper.deleteFriend("fkdlcn123")
-//        dbHelper.deleteFriend("binarynacho")
-
     }
 
     private fun load() {

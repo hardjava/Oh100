@@ -3,7 +3,6 @@ package com.example.oh100.MyPageView
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -16,11 +15,8 @@ import com.example.oh100.Service.MyInfoApiResponse
 import com.example.oh100.Service.MyInfoApiService
 import com.example.oh100.Service.update_token
 import com.example.oh100.databinding.MypageViewBinding
-import com.example.oh100.databinding.TimePickerViewBinding
 import com.example.oh100.databinding.UserSearchingViewBinding
-import com.example.oh100.solved.Problem
 import com.example.oh100.solved.TierImage
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -48,6 +44,7 @@ class MyPageViewActivity : AppCompatActivity() {
         val dialog_binding = UserSearchingViewBinding.inflate(layoutInflater)
         var user_exist = false
         var user_count = 0
+        var user_handle : String? = null
 
         dialog_binding.searchButton.setOnClickListener {
             val searching_handle = dialog_binding.userHandleEditText.text.toString()
@@ -66,12 +63,13 @@ class MyPageViewActivity : AppCompatActivity() {
                             user_exist = true
 
                             val userResponse = apiResponse.items[0]
+                            user_handle = userResponse.handle
                             val profile_image_URL = userResponse.profileImageUrl
                             user_count = userResponse.solvedCount
                             val tier = userResponse.tier
                             val rank = userResponse.rank
 
-                            dialog_binding.searchedUserHandle.text = "User ID : $searching_handle"
+                            dialog_binding.searchedUserHandle.text = "User ID : $user_handle"
 
                             if (profile_image_URL != null) {
                                 Glide.with(dialog_binding.root)
@@ -101,7 +99,7 @@ class MyPageViewActivity : AppCompatActivity() {
                     dialog_binding.userHandleEditText.setText("")
                     dialog_binding.searchedUserImage.setImageResource(R.drawable.null_profile_image)
                     dialog_binding.searchedUserHandle.text = "Handle : NULL"
-                    dialog_binding.searchedUserTier.setImageResource(R.drawable.level_12)
+                    TierImage.load(this@MyPageViewActivity, dialog_binding.searchedUserTier, 0)
                     dialog_binding.searchedUserCount.text = "Solved Count : NULL"
                     dialog_binding.searchedUserRank.text = "Rank : NULL"
 
@@ -115,9 +113,8 @@ class MyPageViewActivity : AppCompatActivity() {
         builder.setView(dialog_binding.root)
 
         builder.setPositiveButton("register / change") { dialog, _ ->
-            if(user_exist) {
+            if(user_exist && user_handle != null) {
                 val cur_handle = dbHelper.getMyId()
-                val user_handle = dialog_binding.userHandleEditText.text.toString()
 
                 if (cur_handle != null) {
                     dbHelper.deleteMyId(cur_handle)
@@ -125,16 +122,16 @@ class MyPageViewActivity : AppCompatActivity() {
 
                     runBlocking {
                         launch(Dispatchers.IO) {
-                            CloudFirestoreService.rename_document("friends_count", cur_handle, user_handle)
+                            CloudFirestoreService.rename_document("friends_count", cur_handle, user_handle!!)
                         }
                     }
 
                     dbHelper.deleteMyId(cur_handle)
                 }
 
-                dbHelper.addMyId(user_handle)
+                dbHelper.addMyId(user_handle!!)
 
-                CloudFirestoreService.add_user(user_handle, user_count)
+                CloudFirestoreService.add_user(user_handle!!, user_count)
 
                 dialog.dismiss()
 
@@ -151,7 +148,7 @@ class MyPageViewActivity : AppCompatActivity() {
             dialog_binding.userHandleEditText.setText("")
             dialog_binding.searchedUserImage.setImageResource(R.drawable.null_profile_image)
             dialog_binding.searchedUserHandle.text = "Handle : NULL"
-            dialog_binding.searchedUserTier.setImageResource(R.drawable.level_12)
+            TierImage.load(this@MyPageViewActivity, dialog_binding.searchedUserTier, 0)
             dialog_binding.searchedUserCount.text = "Solved Count : NULL"
             dialog_binding.searchedUserRank.text = "Rank : NULL"
         }
@@ -163,9 +160,6 @@ class MyPageViewActivity : AppCompatActivity() {
 
     private fun init() {
         dbHelper = MyPageDBHelper(this)
-//        dbHelper.deleteMyId("binarynacho")
-//        dbHelper.deleteMyId("songpy123")
-//        dbHelper.deleteMyId("fkdlcn123")
     }
 
     private fun showMyPage() {

@@ -20,8 +20,6 @@ import com.example.oh100.solved.TierImage
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 
-// TODO : MyPage에서 현재 사용자 정보를 변경하면 친구 리스트도 변경되도록 설정
-
 class TimerActivity : AppCompatActivity() {
     private lateinit var binding : TimerViewBinding
     private val df = DecimalFormat("00")
