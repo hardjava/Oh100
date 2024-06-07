@@ -118,6 +118,8 @@ class MyPageViewActivity : AppCompatActivity() {
                 CloudFirestoreService.add_user(user_handle, user_count)
 
                 dialog.dismiss()
+
+                showMyPage()
             }
         }
         builder.setNegativeButton("cancel") { dialog, _ ->
@@ -125,6 +127,15 @@ class MyPageViewActivity : AppCompatActivity() {
         }
 
         val dialog = builder.create()
+
+        dialog.setOnDismissListener {
+            dialog_binding.userHandleEditText.setText("")
+            dialog_binding.searchedUserImage.setImageResource(R.drawable.null_profile_image)
+            dialog_binding.searchedUserHandle.text = "Handle : NULL"
+            dialog_binding.searchedUserTier.setImageResource(R.drawable.level_12)
+            dialog_binding.searchedUserCount.text = "Solved Count : NULL"
+            dialog_binding.searchedUserRank.text = "Rank : NULL"
+        }
 
         binding.registerOrChangeButton.setOnClickListener {
             dialog.show()

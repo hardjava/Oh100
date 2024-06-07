@@ -132,12 +132,23 @@ class FriendListViewActivity : AppCompatActivity() {
 
                 dialog.dismiss()
             }
+
+            load()
         }
         builder.setNegativeButton("cancel") { dialog, _ ->
             dialog.dismiss()
         }
 
         val dialog = builder.create()
+
+        dialog.setOnDismissListener {
+            dialog_binding.userHandleEditText.setText("")
+            dialog_binding.searchedUserImage.setImageResource(R.drawable.null_profile_image)
+            dialog_binding.searchedUserHandle.text = "Handle : NULL"
+            dialog_binding.searchedUserTier.setImageResource(R.drawable.level_12)
+            dialog_binding.searchedUserCount.text = "Solved Count : NULL"
+            dialog_binding.searchedUserRank.text = "Rank : NULL"
+        }
 
         binding.searchFriendButton.setOnClickListener {
             dialog.show()

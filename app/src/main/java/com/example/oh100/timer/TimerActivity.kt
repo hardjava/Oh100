@@ -3,6 +3,7 @@ package com.example.oh100.timer
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.SharedPreferences
 import android.icu.text.DecimalFormat
 import android.os.Build
 import android.os.Bundle
@@ -20,24 +21,42 @@ import com.example.oh100.solved.TierImage
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 
-// TODO : 타이머 설정 중에 뒤로 나가도 계속 갱신되도록 설정
-// TODO : Search User 창 다시 열면 값들 모두 초기화 되어 있도록 설정
-// TODO : Search User 창에서 설정하면 친구 리스트 및 마이페이지가 새로고침 되도록 설정
 // TODO : Cloud Firestore와 연계해서 오늘 푼 문제 수를 친구 리스트 및 마이페이지에 표시하도록 설정
 
 class TimerActivity : AppCompatActivity() {
+    private lateinit var binding : TimerViewBinding
+    private val df = DecimalFormat("00")
+    private var job: Job? = null
+    private val channel = Channel<String>()
+    private var update_job: Job? = null
+
+    private lateinit var sharedPreferences: SharedPreferences
+    private val pefs_file_name = "timer_prefs"
+    private val timer_h = "timer_h"
+    private val timer_m = "timer_m"
+    private val timer_s = "timer_s"
+    private val timer_is_running = "timer_is_running"
+    private val timer_solving_time = "timer_solving_time"
+    private val timer_problem_number = "timer_problem_number"
+
+    private var h = 0
+    private var m = 0
+    private var s = 0
+    private var is_running = false
+    private var solving_time = 0
+    private var problem_number : Int? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val binding = TimerViewBinding.inflate(layoutInflater)
+        binding = TimerViewBinding.inflate(layoutInflater)
         setContentView(binding.timerLayout)
 
-        var job: Job? = null
-        val channel = Channel<String>()
+        sharedPreferences = getSharedPreferences(pefs_file_name, Context.MODE_PRIVATE)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "채널 이름"
-            val descriptionText = "채널 설명"
+            val name = "Timer_Channel"
+            val descriptionText = "Notification Channel for Timer"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val timer_channel = NotificationChannel("Timer", name, importance).apply {
                 description = descriptionText
@@ -46,15 +65,6 @@ class TimerActivity : AppCompatActivity() {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(timer_channel)
         }
-
-        var is_running = false
-
-        var h = 0
-        var m = 0
-        var s = 0
-        var solving_time = 0
-
-        val df = DecimalFormat("00")
 
         binding.twoHoursButton.setOnClickListener {
             job?.cancel()
@@ -117,12 +127,14 @@ class TimerActivity : AppCompatActivity() {
 
                 binding.timerText.text = "${df.format(h)}:${df.format(m)}:${df.format(s)}"
 
-                val problem_number = dialog_binding.timerProblemNumber.text.toString()
+                val temp_number = dialog_binding.timerProblemNumber.text.toString()
 
-                if(!problem_number.isBlank() && problem_number.all { it.isDigit() }) {
+                if(!temp_number.isBlank() && temp_number.all { it.isDigit() }) {
+                    problem_number = temp_number.toInt()
+
                     CoroutineScope(Dispatchers.Main).launch {
                         val problem = Problem()
-                        problem.init(problem_number.toInt())
+                        problem.init(problem_number!!)
 
                         if (problem.getTitle() != null) {
                             TierImage.load(this@TimerActivity, binding.problemImage, problem.getLevel())
@@ -230,10 +242,109 @@ class TimerActivity : AppCompatActivity() {
                 .show()
         }
 
-        var mainScope = GlobalScope.launch(Dispatchers.Main) {
+        update_job = GlobalScope.launch(Dispatchers.Main) {
             channel.consumeEach {
                 binding.timerText.text = "$it"
             }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        job?.cancel()
+
+        with(sharedPreferences.edit()) {
+            putInt(timer_h, h)
+            putInt(timer_m, m)
+            putInt(timer_s, s)
+            putBoolean(timer_is_running, is_running)
+            putInt(timer_solving_time, solving_time)
+            if(problem_number != null)
+                putInt(timer_problem_number, problem_number!!)
+            apply()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        h = sharedPreferences.getInt(timer_h, 0)
+        m = sharedPreferences.getInt(timer_m, 0)
+        s = sharedPreferences.getInt(timer_s, 0)
+        is_running = sharedPreferences.getBoolean(timer_is_running, false)
+        solving_time = sharedPreferences.getInt(timer_solving_time, 0)
+        problem_number = sharedPreferences.getInt(timer_problem_number, 0)
+
+        binding.timerText.text = "${df.format(h)}:${df.format(m)}:${df.format(s)}"
+
+        CoroutineScope(Dispatchers.Main).launch {
+            val problem = Problem()
+            problem.init(problem_number!!)
+
+            if (problem.getTitle() != null) {
+                TierImage.load(this@TimerActivity, binding.problemImage, problem.getLevel())
+                binding.problemImage.visibility = View.VISIBLE
+
+                binding.problemText.text =
+                    "Problem ${problem_number} : ${problem.getTitle()}"
+                binding.problemText.visibility = View.VISIBLE
+            } else {
+                Toast.makeText(this@TimerActivity, "Problem doesn't exist", Toast.LENGTH_SHORT).show()
+
+                binding.problemImage.visibility = View.INVISIBLE
+                binding.problemText.visibility = View.INVISIBLE
+            }
+        }
+
+        if(is_running && !(s == 0 && m == 0 && h == 0)) {
+            job?.cancel()
+            job = CoroutineScope(Dispatchers.Default).launch {
+                while (is_running) {
+                    delay(1000)
+
+                    if(s == 0 && m == 0 && h == 0) {
+                        is_running = false
+
+                        val builder = NotificationCompat.Builder(this@TimerActivity, "Timer")
+                            .setSmallIcon(R.drawable.ic_notification) // 알림 아이콘 설정
+                            .setContentTitle("Time's up!")
+                            .setContentText("Problem solving time is over.")
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+                        with(NotificationManagerCompat.from(this@TimerActivity)) {
+                            notify(100, builder.build())
+                        }
+
+                        break
+                    }
+
+                    s--
+                    if (s < 0) {
+                        s = 59
+                        m--
+                    }
+                    if (m < 0) {
+                        m = 59
+                        h--
+                    }
+                    if (h < 0) {
+                        h = 0
+                    }
+
+                    solving_time++
+
+                    val time = "${df.format(h)}:${df.format(m)}:${df.format(s)}"
+                    channel.send(time)
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        job?.cancel()
+        update_job?.cancel()
+
+        super.onDestroy()
     }
 }
