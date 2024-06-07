@@ -7,6 +7,7 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.tasks.await
 
 object CloudFirestoreService
 {
@@ -67,5 +68,28 @@ object CloudFirestoreService
         )
 
         documentRef.update(updates)
+    }
+
+    suspend fun rename_document(collectionPath: String, oldDocumentId: String, newDocumentId: String) {
+        val db = Firebase.firestore
+
+        val docRef = db.collection(collectionPath).document(oldDocumentId)
+        val newDocRef = db.collection(collectionPath).document(newDocumentId)
+
+        try {
+            // 기존 문서 데이터 가져오기
+            val snapshot = docRef.get().await()
+            val data = snapshot.data
+
+            if (data != null) {
+                // 새로운 문서 생성
+                newDocRef.set(data).await()
+
+                // 기존 문서 삭제
+                docRef.delete().await()
+            }
+        } catch (e: Exception) {
+            Log.e("Oh100 Firestore", "Error renaming document: ${e.message}")
+        }
     }
 }

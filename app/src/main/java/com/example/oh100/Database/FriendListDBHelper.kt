@@ -8,14 +8,12 @@ import com.example.oh100.Object.User
 
 class FriendListDBHelper(context: Context) : SQLiteOpenHelper(context, "friendList.db", null, 1) {
     private val tableName = "FriendList"
-    private val columnId = "id"
     private val columnUserId = "userId"
     private val columnSolvedCount = "solved_count"
 
     override fun onCreate(db: SQLiteDatabase?) {
         val sql = "create table if not exists $tableName" +
-                "($columnId integer PRIMARY KEY autoincrement, " +
-                "$columnUserId text, " +
+                "($columnUserId text PRIMARY KEY, " +
                 "$columnSolvedCount integer)"
         db?.execSQL(sql)
     }

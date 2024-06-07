@@ -20,8 +20,7 @@ import com.example.oh100.solved.TierImage
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 
-// TODO : 데이터베이스에 중복 추가되는 문제 수정
-// TODO : Cloud Firestore와 연계해서 오늘 푼 문제 수를 친구 리스트 및 마이페이지에 표시하도록 설정
+// TODO : MyPage에서 현재 사용자 정보를 변경하면 친구 리스트도 변경되도록 설정
 
 class TimerActivity : AppCompatActivity() {
     private lateinit var binding : TimerViewBinding
@@ -64,6 +63,8 @@ class TimerActivity : AppCompatActivity() {
             m = 0
             s = 0
 
+            solving_time = 0;
+
             binding.timerText.text = "02:00:00"
         }
 
@@ -76,6 +77,8 @@ class TimerActivity : AppCompatActivity() {
             m = 0
             s = 0
 
+            solving_time = 0;
+
             binding.timerText.text = "01:00:00"
         }
 
@@ -87,6 +90,8 @@ class TimerActivity : AppCompatActivity() {
             h = 0
             m = 30
             s = 0
+
+            solving_time = 0;
 
             binding.timerText.text = "00:30:00"
         }
@@ -113,6 +118,8 @@ class TimerActivity : AppCompatActivity() {
                 h = dialog_binding.hourPicker.value
                 m = dialog_binding.minutePicker.value
                 s = dialog_binding.secondPicker.value
+
+                solving_time = 0;
 
                 binding.timerText.text = "${df.format(h)}:${df.format(m)}:${df.format(s)}"
 
@@ -239,6 +246,8 @@ class TimerActivity : AppCompatActivity() {
                     }
                     .show()
             }
+
+            solving_time = 0;
         }
 
         update_job = GlobalScope.launch(Dispatchers.Main) {
