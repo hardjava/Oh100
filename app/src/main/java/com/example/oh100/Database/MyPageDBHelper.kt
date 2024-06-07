@@ -4,7 +4,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import com.example.oh100.Object.User
 
 class MyPageDBHelper(context: Context) : SQLiteOpenHelper(context, "myPage.db", null, 1) {
     private val tableName = "myPage"
@@ -24,15 +23,15 @@ class MyPageDBHelper(context: Context) : SQLiteOpenHelper(context, "myPage.db", 
     fun getMyId(): String? {
         val db = this.readableDatabase
         var myId: String? = null
-        val cursor = db?.rawQuery("select * from $tableName", null)
-        if (cursor != null) {
-            for (index in 0 until cursor.count) {
-                cursor.moveToNext()
-                myId = cursor.getString(1)
+        val cursor = db.rawQuery("select * from $tableName", null)
+        try {
+            if (cursor.moveToFirst()) {
+                myId = cursor.getString(0)
             }
+        } finally {
             cursor.close()
+            db.close()
         }
-        db.close()
         return myId
     }
 

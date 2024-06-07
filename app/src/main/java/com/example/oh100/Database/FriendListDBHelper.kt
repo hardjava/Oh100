@@ -4,10 +4,11 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 import com.example.oh100.Object.User
 
 class FriendListDBHelper(context: Context) : SQLiteOpenHelper(context, "friendList.db", null, 1) {
-    private val tableName = "FriendList"
+    private val tableName = "friend_list"
     private val columnUserId = "userId"
     private val columnSolvedCount = "solved_count"
 
@@ -31,9 +32,8 @@ class FriendListDBHelper(context: Context) : SQLiteOpenHelper(context, "friendLi
         if (cursor != null) {
             for (index in 0 until cursor.count) {
                 cursor.moveToNext()
-                val id = cursor.getInt(0)
-                val userId = cursor.getString(1)
-                val solvedCount = cursor.getInt(2)
+                val userId = cursor.getString(0)
+                val solvedCount = cursor.getInt(1)
                 friendList.add(User(userId, solvedCount))
             }
             cursor.close()
@@ -44,6 +44,7 @@ class FriendListDBHelper(context: Context) : SQLiteOpenHelper(context, "friendLi
 
     fun addFriend(id: String, solvedCount: Int) {
         val db = this.writableDatabase
+        Log.e("nacho2407", "addFriend: $id, $solvedCount")
         val values = ContentValues().apply {
             put(columnUserId, id)
             put(columnSolvedCount, solvedCount)

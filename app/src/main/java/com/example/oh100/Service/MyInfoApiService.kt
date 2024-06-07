@@ -7,6 +7,7 @@ import retrofit2.http.Query
 
 
 data class MyInfoResponse(
+    @SerializedName("handle") val handle: String,
     @SerializedName("profileImageUrl") val profileImageUrl: String?,
     @SerializedName("solvedCount") val solvedCount: Int,
     @SerializedName("tier") val tier: Int,
