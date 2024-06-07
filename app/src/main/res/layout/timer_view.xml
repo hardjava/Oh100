@@ -16,7 +16,7 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:scaleType="fitEnd"
-            android:src="@drawable/level_12"
+            android:src="@drawable/level_0"
             android:layout_marginRight="10px"
             android:layout_marginBottom="5px"
             android:visibility="invisible"/>
@@ -25,7 +25,7 @@
             android:id="@+id/problem_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Problem 2580 : 스도쿠"
+            android:text="Problem NULL"
             android:textSize="20dp"
             android:visibility="invisible"/>
     </androidx.appcompat.widget.LinearLayoutCompat>
