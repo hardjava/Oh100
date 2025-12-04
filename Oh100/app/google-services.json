@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "564577210999",
+    "project_id": "oh100-e79fc",
+    "storage_bucket": "oh100-e79fc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:564577210999:android:10fd034741bfc4f1666c72",
+        "android_client_info": {
+          "package_name": "com.example.oh100"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhfAmklFo0IsK87_mUiLHcg8R_AYzo1xE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
